@@ -1,0 +1,36 @@
+# Maintainer: Tom Tryfonidis <tomtryf@gmail.com>
+# Contributors: Tom Tryfonidis <tomtryf@gmail.com>
+#   					henning mueller <henning@orgizm.net>
+#   					Andrew Hamilton
+
+pkgname=euca2ools
+pkgver=3.0.2
+pkgrel=1
+pkgdesc="Command-line tools for interacting with Amazon EC2 and S3 API-compatible Web services using the REST/Query API."
+arch=('any')
+url=http://www.eucalyptus.com/
+license=('BSD')
+depends=('python2-lxml' 'python2-progressbar' 'python2-requestbuilder' 'python2-requests' 'rsync')
+makedepends=('python2' 'python2-setuptools')
+source=(http://downloads.eucalyptus.com/software/euca2ools/3.0/source/$pkgname-$pkgver.tar.gz
+http://downloads.eucalyptus.com/software/euca2ools/3.0/source/$pkgname-$pkgver.tar.gz.asc)
+md5sums=('073fbe1b7637d6a39d126b6679b40df3'
+         'SKIP')
+
+build() {
+	cd $srcdir/$pkgname-$pkgver
+	python2 setup.py build
+}
+
+package() {
+	cd $srcdir/$pkgname-$pkgver
+	python2 setup.py install --root="${pkgdir}" --optimize=1 || return 1
+
+	mkdir -p ${pkgdir}/etc/euca2ools
+	cp -p conf/euca2ools.ini ${pkgdir}/etc/euca2ools
+	mkdir -p ${pkgdir}/usr/share/euca2ools/certs
+	cp -p certs/* ${pkgdir}/usr/share/euca2ools/certs
+
+	# Change shebang lines for python2.
+	find . -type f | xargs sed -i "s:/python:/python2:"
+}
