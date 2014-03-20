@@ -1,0 +1,145 @@
+# Maintainer: Tom Tryfonidis <tomtryf@gmail.com>
+# Contributor: Peter Mylemans <peter.mylemans@gmail.com>
+# Contributor: Tom Tryfonidis <tomtryf@gmail.com>
+#
+# This is a modified version for eucalyptus cloud
+
+pkgbase=axis2c
+pkgname=(axis2c axis2c-docs)
+pkgver=1.6.0
+pkgrel=1
+arch=('i686' 'x86_64')
+url="http://axis.apache.org/axis2/c/core/"
+license=('Apache')
+makedepends=('pkgconfig' 'libxml2' 'openssl' 'curl' 'zlib' 'apr')
+source=(http://archive.apache.org/dist/ws/axis2-c/1_6_0/$pkgname-src-$pkgver.tar.gz
+axis2c-1.6.0-dso.patch
+axis2c-1.6.0-envpath.patch
+axis2c-1.6.0-neethi-nobuildtest.patch
+axis2c-1.6.0-werror.patch
+axis2c-1.6.0-sslctx.patch
+axis2c-1.6.0-curlinit.patch
+axis2c-1.6.0-apache-fixworker.patch
+axis2c-1.6.0-destdir.patch
+)
+md5sums=('67663a8744fa5d6f06c7feb22a94035e'
+         '6d59d6a16f7a2acc7c487e6500dbfa32'
+         'f84e131f617de5a00d2b51078e93ffb9'
+         '6ec080e1879ed6c9c1065b77a74ef6ac'
+         '70c77114918cc9d43d7b3056f01ee710'
+         '1ebcb100b6ab5ed77fc16890240da350'
+         '42b1e02bb75cd54f15ba345022137e01'
+         '78c45c28f6d249dbbfcaa4fbe742a595'
+         'f50195b71064af904eb72840f0bd0f61')
+
+_AXIS_REL="/usr/lib/$pkgbase"
+
+prepare() {
+  cd $srcdir/$pkgbase-src-$pkgver
+		patch -p1 < $srcdir/axis2c-1.6.0-dso.patch
+		patch -p1 < $srcdir/axis2c-1.6.0-envpath.patch
+		patch -p1 < $srcdir/axis2c-1.6.0-neethi-nobuildtest.patch
+		patch -p1 < $srcdir/axis2c-1.6.0-werror.patch
+		patch -p1 < $srcdir/axis2c-1.6.0-sslctx.patch
+		patch -p1 < $srcdir/axis2c-1.6.0-curlinit.patch
+		patch -p2 < $srcdir/axis2c-1.6.0-apache-fixworker.patch
+    patch -p2 < $srcdir/axis2c-1.6.0-destdir.patch
+}
+
+build() {
+  pushd $srcdir/$pkgbase-src-$pkgver
+    autoreconf -i || return 1
+
+    ./configure --prefix=$_AXIS_REL \
+      --with-apr=/usr/include/apr-1 \
+			--with-apache2=/usr/include/httpd \
+			--enable-tests=yes \
+			--disable-static \
+			--with-gnu-ld \
+			--with-pic \
+			--enable-libcurl \
+			--enable-libxml2 \
+			--enable-openssl \
+			--enable-tcp \
+      CFLAGS=-w
+
+    make
+
+    mkdir -p $srcdir/fakeinstall
+    make DESTDIR=$srcdir/fakeinstall install
+popd
+}
+
+package_axis2c() {
+pkgdesc="Apache Axis2/C is an effort to implement Axis2 architecture in C. Apache Axis2/C can be used to provide and consume Web Services."
+depends=('libxml2' 'openssl' 'curl' 'zlib' 'apr')
+optdepends=('axis2c-docs: Developer documentation for axis2/C')
+backup=(etc/axis2.xml)
+
+install -d $pkgdir/$_AXIS_REL 
+
+# Header files to include folder
+install -d $pkgdir/usr/lib/pkgconfig
+install $srcdir/fakeinstall/$_AXIS_REL/lib/pkgconfig/axis2c.pc $pkgdir/usr/lib/pkgconfig
+cp -Pr $srcdir/fakeinstall/$_AXIS_REL/include $pkgdir/usr/include
+ln -s /usr/include $pkgdir/$_AXIS_REL/include
+
+# Copy libs
+install -d $pkgdir/usr/lib
+cp -P $srcdir/fakeinstall/$_AXIS_REL/lib/libaxis*.so* $pkgdir/usr/lib
+cp -P $srcdir/fakeinstall/$_AXIS_REL/lib/libaxutil*.so* $pkgdir/usr/lib
+cp -P $srcdir/fakeinstall/$_AXIS_REL/lib/libneethi*.so* $pkgdir/usr/lib
+cp -P $srcdir/fakeinstall/$_AXIS_REL/lib/libguththila*.so* $pkgdir/usr/lib
+ln -s /usr/lib $pkgdir/$_AXIS_REL/lib
+
+# tools to bin
+install -d $pkgdir/usr/bin 
+install -d $pkgdir/$_AXIS_REL/bin $pkgdir/$_AXIS_REL/bin/tools/wsdl2c $pkgdir/$_AXIS_REL/bin/tools/tcpmon $pkgdir/$_AXIS_REL/bin/tools/md5
+install $srcdir/fakeinstall/$_AXIS_REL/bin/axis2_http_server $pkgdir/usr/bin
+install $srcdir/fakeinstall/$_AXIS_REL/bin/axis2_tcp_server $pkgdir/usr/bin
+install $srcdir/fakeinstall/$_AXIS_REL/bin/tools/md5/md5 $pkgdir/$_AXIS_REL/bin/tools/md5/md5
+install $srcdir/fakeinstall/$_AXIS_REL/bin/tools/tcpmon/tcpmon $pkgdir/$_AXIS_REL/bin/tools/tcpmon/tcpmon
+install -m 755 $srcdir/fakeinstall/$_AXIS_REL/bin/tools/wsdl2c/WSDL2C.sh $pkgdir/$_AXIS_REL/bin/tools/wsdl2c/WSDL2C.sh
+ln -s /usr/bin/axis2_http_server $pkgdir/$_AXIS_REL/bin/axis2_http_server
+ln -s /usr/bin/axis2_tcp_server $pkgdir/$_AXIS_REL/bin/axis2_tcp_server
+ln -s $_AXIS_REL/bin/tools/md5/md5 $pkgdir/$_AXIS_REL/bin/md5
+ln -s $_AXIS_REL/bin/tools/tcpmon/tcpmon $pkgdir/$_AXIS_REL/bin/tcpmon
+ln -s $_AXIS_REL/bin/tools/wsdl2c/WSDL2C.sh $pkgdir/$_AXIS_REL/bin/WSDL2C.sh
+
+# Deploy the Apache2 module
+install -d $pkgdir/usr/lib/httpd/modules
+install $srcdir/fakeinstall/$_AXIS_REL/lib/libmod_axis2.so.0.6.0 $pkgdir/usr/lib/httpd/modules/mod_axis2.so.0.6.0
+ln -s /usr/lib/httpd/modules/mod_axis2.so.0.6.0 $pkgdir/usr/lib/httpd/modules/mod_axis2.so
+ln -s /usr/lib/httpd/modules/mod_axis2.so.0.6.0 $pkgdir/usr/lib/httpd/modules/mod_axis2.so.0
+
+# axis2.xml in etc
+install -d $pkgdir/etc
+install $srcdir/fakeinstall/$_AXIS_REL/axis2.xml $pkgdir/etc/
+sed -i 's#<!--phase name="Security"/-->#<phase name="Security"/>#' $pkgdir/etc/axis2.xml
+ln -s /etc/axis2.xml $pkgdir/$_AXIS_REL/axis2.xml
+
+# Docs go under /usr/share
+install -d ${pkgdir}/usr/share/doc/$pkgname/
+
+for file in AUTHORS COPYING CREDITS INSTALL LICENSE NEWS NOTICE; do
+	install $srcdir/fakeinstall/$_AXIS_REL/$file "${pkgdir}/usr/share/doc/$pkgname/"
+done
+
+# Installations expect this
+install -d -m 0755 $pkgdir/$_AXIS_REL/services
+
+# Create logs folder
+install -d $pkgdir/var/log/$pkgname
+ln -s /var/log/$pkgname $pkgdir/$_AXIS_REL/logs
+
+# Copy modules folder
+cp -r $srcdir/fakeinstall/$_AXIS_REL/modules $pkgdir/$_AXIS_REL/modules
+}
+
+package_axis2c-docs() {
+pkgdesc="Developer documentation for axis2/C."
+
+# Docs go under /usr/share
+install -d ${pkgdir}/usr/share/doc/$pkgname/
+cp -r $srcdir/fakeinstall/$_AXIS_REL/docs "${pkgdir}/usr/share/doc/$pkgname/"
+}

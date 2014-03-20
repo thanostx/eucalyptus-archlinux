@@ -1,0 +1,13 @@
+index: axis2c-src-1.6.0/neethi
+===================================================================
+--- axis2c-src-1.6.0/neethi/Makefile.org	
++++ axis2c-src-1.6.0/neethi/Makefile.in	
+@@ -193,7 +193,7 @@
+ target_vendor = @target_vendor@
+ top_builddir = @top_builddir@
+ top_srcdir = @top_srcdir@
++SUBDIRS = src
+-SUBDIRS = src test
+ include_HEADERS = $(top_builddir)/include/*.h
+ all: config.h
+ 	$(MAKE) $(AM_MAKEFLAGS) all-recursive

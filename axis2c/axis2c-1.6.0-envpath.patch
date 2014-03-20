@@ -1,0 +1,34 @@
+Index: axis2c-src-1.6.0/src/core/transport/http/server/simple_axis2_server/http_server_main.c
+===================================================================
+--- axis2c-src-1.6.0.orig/src/core/transport/http/server/simple_axis2_server/http_server_main.c
++++ axis2c-src-1.6.0/src/core/transport/http/server/simple_axis2_server/http_server_main.c
+@@ -107,7 +107,11 @@ main(
+ 	unsigned int file_flag = 0;
+     axutil_log_levels_t log_level = AXIS2_LOG_LEVEL_DEBUG;
+     const axis2_char_t *log_file = "axis2.log";
+-    const axis2_char_t *repo_path = DEFAULT_REPO_PATH;
++    axis2_char_t *repo_loc = AXIS2_GETENV("AXIS2C_HOME");
++    if (! repo_loc) {
++        repo_loc = DEFAULT_REPO_PATH;
++    }
++    const axis2_char_t *repo_path = repo_loc;
+     int port = 9090;
+ 	axis2_status_t status;
+ 	
+Index: axis2c-src-1.6.0/src/core/transport/tcp/server/simple_tcp_server/tcp_server_main.c
+===================================================================
+--- axis2c-src-1.6.0.orig/src/core/transport/tcp/server/simple_tcp_server/tcp_server_main.c
++++ axis2c-src-1.6.0/src/core/transport/tcp/server/simple_tcp_server/tcp_server_main.c
+@@ -110,7 +110,11 @@ main(
+     axutil_log_levels_t log_level = AXIS2_LOG_LEVEL_DEBUG;
+     const axis2_char_t *log_file = AXIS2_TCP_SERVER_LOG_FILE_NAME;
+     int port = AXIS2_TCP_SERVER_PORT;
+-    const axis2_char_t *repo_path = AXIS2_TCP_SERVER_REPO_PATH;
++    axis2_char_t *repo_loc = AXIS2_GETENV("AXIS2C_HOME");
++    if (! repo_loc) {
++        repo_loc = AXIS2_TCP_SERVER_REPO_PATH;
++    }
++    const axis2_char_t *repo_path = repo_loc;
+ 
+     while ((c = AXIS2_GETOPT(argc, argv, ":p:r:ht:l:s:f:")) != -1)
+     {

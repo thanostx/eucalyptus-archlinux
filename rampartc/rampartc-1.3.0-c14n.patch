@@ -1,0 +1,58 @@
+Index: rampartc-src-1.3.0/src/omxmlsec/c14n/c14n.c
+===================================================================
+--- rampartc-src-1.3.0.orig/src/omxmlsec/c14n/c14n.c
++++ rampartc-src-1.3.0/src/omxmlsec/c14n/c14n.c
+@@ -27,6 +27,7 @@
+ #include <axutil_array_list.h>
+ #include <axiom_element.h>
+ #include <axiom_children_iterator.h>
++#include <axiom_data_source.h>
+ #include <axiom_document.h>
+ #include <axiom_comment.h>
+ #include <oxs_constants.h>
+@@ -728,6 +729,35 @@ c14n_apply_on_text (
+ }
+ 
+ static axis2_status_t
++c14n_apply_on_data_source (
++     const axiom_node_t *node,
++     const c14n_ctx_t *ctx
++)
++{
++    axiom_data_source_t *src = NULL;
++    src = (axiom_data_source_t *)axiom_node_get_data_element((axiom_node_t *)node, ctx->env);
++
++    if (src == NULL)
++        return AXIS2_FAILURE;
++
++    axutil_stream_t *stream = axiom_data_source_get_stream(src, ctx->env);
++
++    if(stream == NULL)
++        return AXIS2_FAILURE;
++
++    axis2_char_t* buf =  axutil_stream_get_buffer(stream, ctx->env);
++    int buflen = axutil_stream_get_len(stream, ctx->env);
++    if(buf == NULL || buflen < 0)
++        return AXIS2_FAILURE;
++
++    buf[buflen] = '\0'; /* buflen is an index here*/
++    c14n_output(buf, ctx);
++    buf = NULL;
++
++    return AXIS2_SUCCESS;
++}
++
++static axis2_status_t
+ c14n_apply_on_node (
+     const axiom_node_t *node,
+     const c14n_ctx_t *ctx
+@@ -748,6 +778,9 @@ c14n_apply_on_node (
+             c14n_apply_on_comment(node, ctx);
+             break;
+         }
++    case AXIOM_DATA_SOURCE:
++        c14n_apply_on_data_source(node, ctx);
++        break;
+     case AXIOM_DOCTYPE:
+     case AXIOM_PROCESSING_INSTRUCTION:
+     default:

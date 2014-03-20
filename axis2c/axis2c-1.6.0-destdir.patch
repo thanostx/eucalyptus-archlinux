@@ -1,0 +1,18 @@
+diff -ru src.old/axis2c-src-1.6.0/Makefile.am src/axis2c-src-1.6.0/Makefile.am
+--- src.old/axis2c-src-1.6.0/Makefile.am	2011-01-12 11:20:08.490000113 +0100
++++ src/axis2c-src-1.6.0/Makefile.am	2011-01-12 11:21:07.286666780 +0100
+@@ -1,8 +1,8 @@
+-datadir=$(prefix)
+-logsdir=$(prefix)/logs
+-docsdir=$(prefix)
+-includedir=$(prefix)/include/axis2-1.6.0
+-wsdl2cdir=$(prefix)/bin/tools/wsdl2c
++datadir=$(prefix)
++logsdir=$(prefix)/logs
++docsdir=../fakeinstall/$(prefix)
++includedir=$(prefix)/include/axis2-1.6.0
++wsdl2cdir=$(prefix)/bin/tools/wsdl2c
+ 
+ 
+ pkgconfigdir = $(libdir)/pkgconfig
+
