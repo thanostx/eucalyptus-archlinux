@@ -1,0 +1,14 @@
+[Unit]
+Description=The Eucalyptus Console service
+After=syslog.target network.target remote-fs.target nss-lookup.target
+
+[Service]
+Type=forking
+User=eucaconsole
+PIDFile=/var/run/eucalyptus-console/eucalyptus-console.pid
+ExecStart=/usr/lib/eucalyptus-console/eucalyptus-console.init start
+ExecStop=/usr/lib/eucalyptus-console/eucalyptus-console.init stop
+
+[Install]
+WantedBy=multi-user.target
+

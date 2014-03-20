@@ -1,0 +1,40 @@
+pre_install() {
+	getent group eucaconsole >/dev/null || groupadd -r eucaconsole
+	getent passwd eucaconsole >/dev/null || useradd -r -g eucaconsole -d /var/run/eucalyptus-console -c 'Eucalyptus Console' eucaconsole
+}
+
+post_install() {
+	chown root:eucaconsole  /etc/eucalyptus-console/console.ini
+	chown eucaconsole:eucaconsole /etc/eucalyptus-console
+	chown eucaconsole:eucaconsole /var/log/eucalyptus-console
+	chown eucaconsole:eucaconsole /usr/share/eucalyptus-console
+
+  if type -P systemd-tmpfiles &> /dev/null; then
+    systemd-tmpfiles --create eucalyptus-console.conf
+  fi
+
+	systemctl start eucalyptus-console.service
+	systemctl enable eucalyptus-console.service
+}
+
+pre_upgrade() {
+	systemctl stop eucalyptus-console.service
+}
+
+post_upgrade() {
+  if type -P systemd-tmpfiles &> /dev/null; then
+    systemd-tmpfiles --create eucalyptus-console.conf
+  fi
+
+	systemctl start eucalyptus-console.service
+}
+
+pre_remove() {
+	systemctl stop eucalyptus-console.service
+	systemctl disable eucalyptus-console.service
+}
+
+post_remove() {
+	getent passwd eucaconsole >/dev/null && userdel eucaconsole
+	getent group eucaconsole >/dev/null && groupdel -r eucaconsole
+}

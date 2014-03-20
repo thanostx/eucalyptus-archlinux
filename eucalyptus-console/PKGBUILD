@@ -1,0 +1,54 @@
+# Maintainer: Tom Tryfonidis <tomtryf@gmail.com>
+# Contributor: Tom Tryfonidis <tomtryf@gmail.com>
+
+pkgname=eucalyptus-console
+_buildname=eucaconsole
+pkgver=3.4.2
+pkgrel=1
+pkgdesc="The Eucalyptus User Console is a web interface designed for use with Eucalyptus and AWS cloud services."
+arch=('any')
+url="http://eucalyptus.com/"
+license=('BSD' 'CPL' 'GPL3' 'MIT')
+depends=('python2-sockjs-tornado' 'python2-m2crypto')
+makedepends=('python2' 'python2-setuptools' 'python2-boto' 'python2-tornado')
+backup=(etc/eucalyptus-console/console.ini)
+install=eucalyptus-console.install
+source=(http://downloads.eucalyptus.com/software/eucalyptus/3.4/source/$_buildname-$pkgver.tar.gz
+http://downloads.eucalyptus.com/software/eucalyptus/3.4/source/$_buildname-$pkgver.tar.gz.asc
+eucalyptus-console.service
+eucalyptus-console.init
+eucalyptus-console.conf)
+md5sums=('9d81adc3c9b3c8754b7cf9bca2b50358'
+         'SKIP'
+         '0da42abb6cee33f1bcfd92f0d518d326'
+         'c0b3b5b312eb77be65ad3182ac078761'
+         '4b79c60dc046811044ec1f0d24e1dabc')
+
+build() {
+  cd "$srcdir/$_buildname-$pkgver"
+	python2 setup.py build
+}
+
+package() {
+  cd "$srcdir/$_buildname-$pkgver"
+	python2 setup.py install --root="${pkgdir}" --skip-build
+
+	install -d $pkgdir/var/log/eucalyptus-console
+	install -d $pkgdir/usr/lib/systemd/system
+	install -d $pkgdir/usr/lib/{eucalyptus-console,tmpfiles.d}
+	install -m 755 $srcdir/eucalyptus-console.conf "$pkgdir/usr/lib/tmpfiles.d/"
+	install -m 755 $srcdir/eucalyptus-console.init $pkgdir/usr/lib/eucalyptus-console/
+	install $srcdir/eucalyptus-console.service $pkgdir/usr/lib/systemd/system
+
+cat >> $pkgdir/etc/eucalyptus-console/console.ini << EOF
+[paths]
+staticpath: /usr/share/eucalyptus-console/static
+EOF
+
+# Enable SSL support by default
+# NOTE: The certificate and key are not packaged, but will be generated
+#       on the first run of the service.
+sed -i -e 's@^#sslcert=.*$@sslcert=/etc/eucalyptus-console/console.crt@' \
+       -e 's@^#sslkey=.*$@sslkey=/etc/eucalyptus-console/console.key@' \
+      $pkgdir/etc/eucalyptus-console/console.ini
+}
