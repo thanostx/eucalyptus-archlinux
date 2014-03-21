@@ -11,7 +11,8 @@ pkgrel=1
 arch=('i686' 'x86_64')
 url="http://axis.apache.org/axis2/c/core/"
 license=('Apache')
-makedepends=('pkgconfig' 'libxml2' 'openssl' 'curl' 'zlib' 'apr')
+depends=('libxml2' 'openssl' 'curl' 'apr')
+makedepends=('pkgconfig')
 source=(http://archive.apache.org/dist/ws/axis2-c/1_6_0/$pkgname-src-$pkgver.tar.gz
 axis2c-1.6.0-dso.patch
 axis2c-1.6.0-envpath.patch
