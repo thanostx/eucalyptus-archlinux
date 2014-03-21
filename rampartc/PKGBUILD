@@ -11,7 +11,7 @@ pkgdesc="Apache Rampart/C is the security module for Apache Axis2/C."
 arch=('i686' 'x86_64')
 url="http://axis.apache.org/axis2/c/rampart/"
 license=('Apache')
-depends=("axis2c>=1.6" 'openssl')
+depends=("axis2c>=1.6")
 source=(http://archive.apache.org/dist/ws/rampart/c/1_3_0/$pkgname-src-$pkgver.tar.gz
 rampartc-1.3.0-destdir.patch
 rampartc-1.3.0-quoting.patch
