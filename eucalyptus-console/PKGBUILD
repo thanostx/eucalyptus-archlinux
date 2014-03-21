@@ -11,6 +11,7 @@ url="http://eucalyptus.com/"
 license=('BSD' 'CPL' 'GPL3' 'MIT')
 depends=('python2-sockjs-tornado' 'python2-m2crypto')
 makedepends=('python2' 'python2-setuptools' 'python2-boto' 'python2-tornado')
+optdepends=('python2-mock: Adds support for mock mode')
 backup=(etc/eucalyptus-console/console.ini)
 install=eucalyptus-console.install
 source=(http://downloads.eucalyptus.com/software/eucalyptus/3.4/source/$_buildname-$pkgver.tar.gz
