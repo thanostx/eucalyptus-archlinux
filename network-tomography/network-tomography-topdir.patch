@@ -1,0 +1,29 @@
+Index: network-tomography/network-tomography
+===================================================================
+--- network-tomography.orig/network-tomography
++++ network-tomography/network-tomography
+@@ -23,7 +23,7 @@ if [ $# -lt 1 ]; then
+     exit 1
+ fi
+ 
+-TOP=$(readlink -f $(dirname $(dirname ${0})))
++TOP=/usr/share/network-tomography
+ CLASSPATH=$(echo $(ls ${TOP}/lib/*.jar | xargs -i echo -n {}:).)
+ if [ ${#} -eq 0 ]; then
+   MAIN="org.codehaus.groovy.tools.shell.Main"
+@@ -32,14 +32,8 @@ else
+ fi
+ java -classpath ${CLASSPATH} \
+ -Djava.net.preferIPv4Stack=true \
+--Deuca.home=/tmp \
+--Deuca.log.dir=/tmp \
+--Deuca.log.level=DEBUG \
+--Deuca.log.appender=console \
+--Deuca.exhaust.level=DEBUG \
+--Dscript.name=${TOP}/network-tomography \
++-Dscript.name=/usr/bin/network-tomography \
+ -Dprogram.name=groovy \
+--Deuca.src.dir=${TOP} \
+ -Dgroovy.starter.conf=${TOP}/lib/groovy-starter.conf \
+ -Dgroovy.home=${TOP}/lib/ \
+ -Dtools.jar=${JAVA_HOME}/lib/tools.jar \

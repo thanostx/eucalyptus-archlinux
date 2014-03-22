@@ -1,0 +1,30 @@
+# Maintainer: Tom Tryfonidis <tomtryf@gmail.com>
+# Contributor: Tom Tryfonidis <tomtryf@gmail.com>
+
+pkgname=network-tomography
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="Network Tomography Project."
+arch=('any')
+url="https://github.com/eucalyptus/deveutils"
+license=('GPL3')
+depends=('java-runtime')
+source=(http://downloads.eucalyptus.com/software/tools/source/$pkgname-$pkgver.tar.gz
+http://downloads.eucalyptus.com/software/tools/source/$pkgname-$pkgver.tar.gz.asc
+network-tomography-topdir.patch)
+md5sums=('68a6b7f606ac44ba939d8cee8fb1ba37'
+         'SKIP'
+         'd7259964c7e935f55cd88e141be2c2cc')
+
+prepare() {
+  cd "$srcdir/$pkgname-$pkgver"
+	patch -p1 -b < ${srcdir}/network-tomography-topdir.patch
+}
+
+package() {
+  cd "$srcdir/$pkgname-$pkgver"
+	install -dm 755 ${pkgdir}/usr/share/$pkgname
+	install -dm 755 ${pkgdir}/usr/bin/
+	install -m 755 $pkgname ${pkgdir}/usr/bin/
+	cp -ar lib ${pkgdir}/usr/share/$pkgname/
+}
