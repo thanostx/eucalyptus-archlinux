@@ -1,0 +1,20 @@
+# Maintainer: Tom Tryfonidis <tomtryf@gmail.com>
+# Contributor: Tom Tryfonidis <tomtryf@gmail.com>
+
+pkgname=eucalyptus-sos-plugins
+_buildname=eucalyptus-sosreport-plugins
+pkgver=0.1.5
+pkgrel=1
+pkgdesc="Sosreport is a set of tools that gathers information about system hardware and configuration."
+arch=('any')
+url="http://github.com/eucalyptus/eucalyptus-sosreport-plugins"
+license=('GPL2')
+depends=('python2')
+source=(https://github.com/eucalyptus/eucalyptus-sosreport-plugins/archive/v$pkgver.tar.gz)
+md5sums=('48d39ee7d9131c64574f93191002d55d')
+
+package() {
+  cd "$srcdir/$_buildname-$pkgver"
+	install -m 0755 -d  ${pkgdir}/usr/lib/python2.7/site-packages/sos/plugins
+	install -m 0755 sos/plugins/*.py ${pkgdir}/usr/lib/python2.7/site-packages/sos/plugins
+}
