@@ -1,0 +1,337 @@
+# Contributor: Tom Tryfonidis <tomtryf@gmail.com>
+# Maintainer: Tom Tryfonidis <tomtryf@gmail.com>
+
+pkgbase=eucalyptus
+pkgname=('eucalyptus'
+			'eucalyptus-common-java'
+			'eucalyptus-common-java-libs'
+			'eucalyptus-walrus'
+			'eucalyptus-sc'
+			'eucalyptus-cloud'
+			'eucalyptus-cc'
+			'eucalyptus-nc'
+			'eucalyptus-gl'
+			'eucalyptus-admin-tools'
+			'python-eucadmin'
+			'eucanetd'
+)
+pkgver=3.4.2
+pkgrel=1
+pkgdesc="Elastic Utility Computing Architecture"
+arch=('x86_64')
+url="http://www.eucalyptus.com"
+license=('GPL3')
+makedepends=( #makedepends 
+'apache-ant' 'apache-ivy' "axis2c>=1.6.0" "axis2<=1.4.0" "rampartc>=1.3.0" 'maven' "libvirt>=0.6" 'libxslt' 'python2-m2crypto' 'python2-setuptools' 'swig' 'xalan-java' 'git' 'curl' 'gwt'
+#runtime depends
+'apache' 'bridge-utils' 'dhcp' 'drbd' 'ebtables' 'euca2ools' 'ipset' 'lvm2' 'multipath-tools' 'open-iscsi' 'perl-crypt-openssl-random' 'java-environment'
+'perl-crypt-openssl-rsa'  'perl-xml-simple' 'perl-sys-virt' 'bc' 'parted' 'postgresql' 'pygresql' 'python2-boto' 'rsync' 'tgt' 'vtun' 'vconfig' 'wget')
+source=(http://downloads.eucalyptus.com/software/eucalyptus/3.4/source/$pkgbase-$pkgver.tar.gz
+http://downloads.eucalyptus.com/software/eucalyptus/3.4/source/$pkgbase-$pkgver.tar.gz.asc
+eucalyptus-3.4.0-drbd-common.patch
+fix-storage-makefile.patch
+fix-node-makefile.patch
+eucalyptus-clean-cc
+eucalyptus-nc-libvirt.rules
+dynserv.pl
+#systemd stuff
+eucalyptus.conf
+eucalyptus-cloud.service
+eucalyptus-nc.service
+eucalyptus-cc.service
+eucanetd.service)
+md5sums=('309b2163cceb89f6453e4f3c74c0fcd4'
+         'SKIP'
+         '8c1a8065562d3c1678786d295b9e48b1'
+         '81bc2716915f0ea5fda0a1f69166a5bf'
+         'a21a6d0b8fd7a6d735ae05ad307c12b3'
+         'a5426898c58b23b73b847cbce100566a'
+         '0d370af1ae7c65b9221e8a3aaae8d198'
+         'b7ffe94f28a63ae1eb9f1f718f282197'
+         '40dd76cf22ebb5ea8961556f674d736b'
+         '8fe4cd7d5c61cee9663b3d2efc48a6b1'
+         '08faf788dcccbc7ec337d744bb91fc95'
+         '0ee51ac2002ec71c2d90376e2eb20ed3'
+         '24750d1fd43ae7814f3a424ac264ddd6')
+
+prepare() {
+	export PYTHON=python2
+
+	cd "${srcdir}/$pkgbase-$pkgver"
+	patch -p1 < ${srcdir}/eucalyptus-3.4.0-drbd-common.patch
+	patch -p1 < ${srcdir}/fix-storage-makefile.patch
+	patch -p1 < ${srcdir}/fix-node-makefile.patch
+}
+
+build() {
+	cd "${srcdir}/$pkgbase-$pkgver"
+
+	./configure --with-axis2c=/usr/lib/axis2c \
+			--with-axis2c-services=/usr/lib/axis2c/services \
+			--with-axis2=/usr/share/java/axis2 \
+			--with-apache2-module-dir=/usr/lib/httpd/modules \
+			--prefix=/ \
+			--with-db-home=/usr \
+			--with-wsdl2c-sh=/usr/lib/axis2c/bin/WSDL2C.sh \
+			--with-extra-version=$pkgver \
+			--enable-debug
+	
+	make clean
+	make
+
+	# folder for fakeinstall
+	mkdir ${srcdir}/fakeinstall
+	make DESTDIR=${srcdir}/fakeinstall install
+
+	# docs for eucalyptus
+	mkdir -p ${srcdir}/fakeinstall/usr/share/doc/$pkgbase/
+	cp -v tools/multipath.conf.example.* ${srcdir}/fakeinstall/usr/share/doc/$pkgbase/
+	cp -v README LICENSE INSTALL ${srcdir}/fakeinstall/usr/share/doc/$pkgbase/
+	#cp -v tools/iscsid.conf.example ${srcdir}/fakeinstal/usr/share/doc/$pkgbase/
+
+	# Preparation for systemd
+	mv ${srcdir}/fakeinstall/etc/init.d/eucalyptus-eucanetd ${srcdir}/fakeinstall/etc/init.d/eucanetd
+
+	# http://httpd.apache.org/docs/2.4/upgrading.html changes also needed to init scripts,leaving for now..
+	#sed -i 's/\tMaxClients/\tMaxRequestWorkers/g'  etc/eucalyptus/httpd.conf
+	#sed -i 's/\tMaxRequestsPerChild/\tMaxConnectionsPerChild/g'  etc/eucalyptus/httpd.conf
+}
+
+package_eucalyptus() {
+	pkgdesc="This package contains the common parts of eucalyptus cloud"
+	depends=('perl-crypt-openssl-rsa' 'perl-crypt-openssl-random' 'rsync' 'wget' 'vconfig' 'python2' 'libxslt' 'curl')
+	backup=('etc/eucalyptus/eucalyptus.conf')
+	install=eucalyptus.install
+
+	install -d ${pkgdir}/etc/{eucalyptus,logrotate.d}
+	install -d ${pkgdir}/etc/udev/rules.d/
+	install -d ${pkgdir}/usr/bin/
+	install -d ${pkgdir}/usr/lib/{eucalyptus,tmpfiles.d}
+	install -d ${pkgdir}/usr/share/eucalyptus/
+	install -d ${pkgdir}/usr/share/doc/eucalyptus/
+	install -d ${pkgdir}/var/lib/eucalyptus/{db,keys,upgrade}
+	install -d ${pkgdir}/var/log/eucalyptus
+
+	install -m 755 ${srcdir}/eucalyptus.conf "${pkgdir}/usr/lib/tmpfiles.d/"
+	install ${srcdir}/fakeinstall/etc/eucalyptus/eucalyptus.conf "${pkgdir}/etc/eucalyptus/"
+	install ${srcdir}/fakeinstall/etc/eucalyptus/eucalyptus-version "${pkgdir}/etc/eucalyptus/"
+	install ${srcdir}/fakeinstall/etc/eucalyptus/httpd.conf "${pkgdir}/etc/eucalyptus/"
+	install ${srcdir}/fakeinstall/etc/logrotate.d/eucalyptus "${pkgdir}/etc/logrotate.d/"
+	install ${srcdir}/fakeinstall/usr/sbin/euca_sync_key "${pkgdir}/usr/bin/"
+	install ${srcdir}/fakeinstall/usr/sbin/euca-generate-fault "${pkgdir}/usr/bin/"
+	# Needed for multipath on NCs and SAN-enabled SCs
+	install ${srcdir}/fakeinstall/usr/share/eucalyptus/udev/rules.d/12-dm-permissions.rules "${pkgdir}/etc/udev/rules.d/"
+	install ${srcdir}/fakeinstall/usr/share/eucalyptus/udev/rules.d/65-drbd-owner.rules	"${pkgdir}/etc/udev/rules.d/"
+	# euca_mountwrap & euca_rootwrap files
+	install -m 4750 ${srcdir}/fakeinstall/usr/lib/eucalyptus/euca_* "${pkgdir}/usr/lib/eucalyptus"
+	install -m 0755 ${srcdir}/fakeinstall/usr/libexec/eucalyptus/conntrack_kernel_params "${pkgdir}/usr/lib/eucalyptus"
+	# cc-client-policy.xml and sc-client-policy.xml files
+	install ${srcdir}/fakeinstall/var/lib/eucalyptus/keys/*-client-policy.xml "${pkgdir}/var/lib/eucalyptus/keys/"
+
+	cp -r ${srcdir}/fakeinstall/usr/share/eucalyptus/faults "${pkgdir}/usr/share/eucalyptus/"
+	cp -r ${srcdir}/fakeinstall/usr/share/eucalyptus/doc "${pkgdir}/usr/share/eucalyptus/"
+	cp -r ${srcdir}/fakeinstall/usr/share/doc/eucalyptus/ "${pkgdir}/usr/share/doc/"
+
+	for file in add_key.pl connect_iscsitarget.pl connect_iscsitarget_main.pl create-loop-devices disconnect_iscsitarget.pl disconnect_iscsitarget_main.pl generate-migration-keys.sh authorize-migration-keys.pl euca_ipt euca_upgrade floppy get_iscsitarget.pl iscsitarget_common.pl populate_arp.pl; do
+		install ${srcdir}/fakeinstall/usr/share/eucalyptus/$file "${pkgdir}/usr/share/eucalyptus/"
+	done
+	
+	# We use python2
+	sed -i "s|#!/usr/bin/python -tt|#!/usr/bin/python2 -tt|" ${pkgdir}/usr/share/eucalyptus/create-loop-devices
+
+	# Give some love to eucalyptus.conf
+	sed -i -e 's#.*EUCALYPTUS=.*#EUCALYPTUS="/"#' \
+       -e 's#.*HYPERVISOR=.*#HYPERVISOR="kvm"#' \
+       -e 's#.*INSTANCE_PATH=.*#INSTANCE_PATH="/var/lib/eucalyptus/instances"#' \
+       -e 's#.*VNET_BRIDGE=.*#VNET_BRIDGE="br0"#' \
+       ${pkgdir}/etc/eucalyptus/eucalyptus.conf
+}
+
+package_eucalyptus-common-java() {
+	pkgdesc="This package contains the common-java files"
+	depends=("eucalyptus>=$pkgver" "eucalyptus-common-java-libs>=$pkgver" 'lvm2')
+	install=eucalyptus-common-java.install
+
+	install -d ${pkgdir}/etc/eucalyptus/cloud.d/{conf,drbd,jmx,scripts,www}
+	install -d ${pkgdir}/usr/bin/
+	install -d ${pkgdir}/usr/lib/systemd/system/
+	install -d ${pkgdir}/usr/lib/eucalyptus/
+	install -d ${pkgdir}/var/lib/eucalyptus/
+	install -m 644 eucalyptus-cloud.service "${pkgdir}/usr/lib/systemd/system/"
+	install -m 644 ${srcdir}/fakeinstall/etc/init.d/eucalyptus-cloud "${pkgdir}/usr/lib/eucalyptus/"
+	install -m 755 ${srcdir}/fakeinstall/usr/sbin/eucalyptus-cloud "${pkgdir}/usr/bin/"
+	install ${srcdir}/fakeinstall/etc/eucalyptus/cloud.d/eucalyptus-web-default.properties "${pkgdir}/etc/eucalyptus/cloud.d/"
+	install ${srcdir}/fakeinstall/etc/eucalyptus/cloud.d/eucalyptus-web.properties "${pkgdir}/etc/eucalyptus/cloud.d/"
+	install ${srcdir}/fakeinstall/etc/eucalyptus/cloud.d/gwt-web.xml "${pkgdir}/etc/eucalyptus/cloud.d/"
+	install ${srcdir}/fakeinstall/etc/eucalyptus/cloud.d/security.policy "${pkgdir}/etc/eucalyptus/cloud.d/"
+	cp -r ${srcdir}/fakeinstall/etc/eucalyptus/cloud.d/drbd/ "${pkgdir}/etc/eucalyptus/cloud.d/"
+	cp -r ${srcdir}/fakeinstall/etc/eucalyptus/cloud.d/jmx/ "${pkgdir}/etc/eucalyptus/cloud.d/"
+	cp -r ${srcdir}/fakeinstall/etc/eucalyptus/cloud.d/scripts/ "${pkgdir}/etc/eucalyptus/cloud.d/"
+	cp -r ${srcdir}/fakeinstall/etc/eucalyptus/cloud.d/www/ "${pkgdir}/etc/eucalyptus/cloud.d/"
+	cp -r ${srcdir}/fakeinstall/var/lib/eucalyptus/webapps/ "${pkgdir}/var/lib/eucalyptus/"
+ }
+
+package_eucalyptus-common-java-libs() {
+	pkgdesc="This package contains the java WS stack"
+	depends=('java-environment' 'maven')
+	provides=("eucalyptus-enterprise-storage-san-common-libs=$pkgver")
+
+	install -d ${pkgdir}/usr/share/eucalyptus/licenses
+	install ${srcdir}/fakeinstall/usr/share/eucalyptus/*.jar* "${pkgdir}/usr/share/eucalyptus/"
+	cp -r ${srcdir}/fakeinstall/usr/share/eucalyptus/licenses/ "${pkgdir}/usr/share/eucalyptus/"
+ }
+
+package_eucalyptus-walrus() {
+	pkgdesc="This package contains storage component for your cloud: images and buckets are handled by walrus."
+	depends=('eucalyptus>=$pkgver' 'eucalyptus-common-java>=$pkgver' 'drbd')
+	install=eucalyptus-walrus.install
+
+	install -d ${pkgdir}/etc/eucalyptus/
+	install -d -m 0700 ${pkgdir}/var/lib/eucalyptus/bukkits/
+	install ${srcdir}/fakeinstall/etc/eucalyptus/drbd.conf.example "${pkgdir}/etc/eucalyptus/"
+ }
+
+package_eucalyptus-sc() {
+	pkgdesc="This package contains the storage controller part of eucalyptus, which handles the elastic blocks for a given cluster."
+	depends=("eucalyptus>=$pkgver" "eucalyptus-common-java>=$pkgver" 'open-iscsi' 'tgt' 'multipath-tools')
+	provides=(eucalyptus-enterprise-storage-san-common=3.4.2)
+	install=eucalyptus-sc.install
+
+	install -d ${pkgdir}/etc/udev/rules.d/
+	install -d ${pkgdir}/usr/share/eucalyptus/
+	install -d -m 0700 ${pkgdir}/var/lib/eucalyptus/volumes
+	#55-openiscsi-legacy.rules & 55-openiscsi.rules files
+	install ${srcdir}/fakeinstall/usr/share/eucalyptus/udev/rules.d/55-openiscsi*.rules "${pkgdir}/etc/udev/rules.d/"
+	#disconnect_iscsitarget_sc.pl & connect_iscsitarget_sc.pl files
+	install ${srcdir}/fakeinstall/usr/share/eucalyptus/*_sc.pl "${pkgdir}/usr/share/eucalyptus/"
+	# Make iscsidev.sh FHS friendly
+	install -m 0755 ${srcdir}/fakeinstall/usr/share/eucalyptus/udev/scripts/iscsidev.sh "${pkgdir}/usr/share/eucalyptus/"
+	sed -i "s|/etc/udev/scripts/iscsidev.sh|/usr/share/eucalyptus/iscsidev.sh|" ${pkgdir}/etc/udev/rules.d/55-openiscsi.rules
+	sed -i "s|/etc/udev/scripts/iscsidev.sh|/usr/share/eucalyptus/iscsidev.sh|" ${pkgdir}/etc/udev/rules.d/55-openiscsi-legacy.rules
+ }
+
+package_eucalyptus-cloud() {
+	pkgdesc="This package contains the cloud controller part of eucalyptus. The cloud controller needs to be reachable by both the cluster controller and from the cloud clients."
+	depends=("eucalyptus>=$pkgver" "eucalyptus-common-java>=$pkgver" "postgresql>=9.1.9" 'euca2ools>=2.0.0' 'bc')
+	optdepends=('ttf-dejavu: For reporting web UI' 'csync2: Synchronizing configuration support in Eucalyptus HA')
+
+	install -d ${pkgdir}/etc/eucalyptus/cloud.d/init.d/
+	install -d ${pkgdir}/usr/bin/
+	install -d ${pkgdir}/usr/share/eucalyptus
+	# lic_default & lic_template files
+	install ${srcdir}/fakeinstall/usr/share/eucalyptus/lic_* "${pkgdir}/usr/share/eucalyptus/"
+	install ${srcdir}/fakeinstall/etc/eucalyptus/cloud.d/init.d/01_pg_kernel_params "${pkgdir}/etc/eucalyptus/cloud.d/init.d/"
+	install ${srcdir}/fakeinstall/usr/sbin/euca-lictool "${pkgdir}/usr/bin/"
+ }
+
+package_eucalyptus-cc() {
+	pkgdesc="This package contains the cluster controller part of eucalyptus. It handles a group of node controllers."
+	depends=("eucalyptus>=$pkgver" "eucalyptus-gl>=$pkgver" 'bridge-utils' "dhcp>=4.1.1" 'vtun')
+	install=eucalyptus-cc.install
+
+	install -d ${pkgdir}/etc/eucalyptus/
+	install -d ${pkgdir}/usr/lib/axis2c/services/EucalyptusCC/
+	install -d ${pkgdir}/usr/lib/systemd/system/
+	install -d ${pkgdir}/usr/lib/eucalyptus/
+	install -d ${pkgdir}/usr/bin/
+	install -d ${pkgdir}/usr/share/eucalyptus/
+	install -d -m 0700 ${pkgdir}/var/lib/eucalyptus/{CC,keys}
+	install -m 644 ${srcdir}/eucalyptus-cc.service "${pkgdir}/usr/lib/systemd/system/"
+	install -m 755 ${srcdir}/eucalyptus-clean-cc "${pkgdir}/usr/bin/"
+	install -m 755 ${srcdir}/dynserv.pl "${pkgdir}/usr/share/eucalyptus/"
+	install -m 755 ${srcdir}/fakeinstall/etc/init.d/eucalyptus-cc "${pkgdir}/usr/lib/eucalyptus/"
+	install ${srcdir}/fakeinstall/usr/lib/eucalyptus/shutdownCC "${pkgdir}/usr/lib/eucalyptus/"
+	install ${srcdir}/fakeinstall/usr/share/eucalyptus/vtunall.conf.template "${pkgdir}/usr/share/eucalyptus/"
+	cp ${srcdir}/fakeinstall/usr/share/eucalyptus/dynserv.pl "${pkgdir}/usr/share/eucalyptus/dynserv.pl.orig"
+	install ${srcdir}/fakeinstall/usr/share/eucalyptus/getstats_net.pl "${pkgdir}/usr/share/eucalyptus/"
+	install ${srcdir}/fakeinstall/var/lib/eucalyptus/keys/nc-client-policy.xml "${pkgdir}/var/lib/eucalyptus/keys/"
+	cp -r ${srcdir}/fakeinstall/usr/lib/axis2c/services/EucalyptusCC/ "${pkgdir}/usr/lib/axis2c/services/"
+
+	sed -i 's#\t$EUCALYPTUS/usr/libexec/eucalyptus/conntrack_kernel_params#\t$EUCALYPTUS/usr/lib/eucalyptus/conntrack_kernel_params#' \
+	${pkgdir}/usr/lib/eucalyptus/eucalyptus-cc
+
+	#FIXME make me readable!
+	sed -i '138i\ \t# if we find modules load it (needed by httpd-2.4.x) \n\t if [ -e $HTTPD_HOME/usr/lib64/httpd/modules/mod_mpm_event.so ]; then \n\t echo "LoadModule mpm_event_module /usr/lib64/httpd/modules/mod_mpm_event.so" >> $EUCALYPTUS/etc/eucalyptus/httpd-tmp.conf \n\t fi \n\t if [ -e $HTTPD_HOME/usr/lib64/httpd/modules/mod_authn_core.so ]; then \n\t echo "LoadModule authn_core_module /usr/lib64/httpd/modules/mod_authn_core.so" >> $EUCALYPTUS/etc/eucalyptus/httpd-tmp.conf \n\t fi \n\t if [ -e $HTTPD_HOME/usr/lib64/httpd/modules/mod_authz_core.so ]; then \n\t echo "LoadModule authz_core_module /usr/lib64/httpd/modules/mod_authz_core.so" >> $EUCALYPTUS/etc/eucalyptus/httpd-tmp.conf \n\t fi \n\t if [ -e $HTTPD_HOME/usr/lib64/httpd/modules/mod_unixd.so ]; then \n\t echo "LoadModule unixd_module /usr/lib64/httpd/modules/mod_unixd.so" >> $EUCALYPTUS/etc/eucalyptus/httpd-tmp.conf \n\t fi' \
+${pkgdir}/usr/lib/eucalyptus/eucalyptus-cc
+ }
+
+package_eucalyptus-nc() {
+	pkgdesc="This package contains the node controller part of eucalyptus. This component handles instances."
+	depends=("eucalyptus>=$pkgver" "eucalyptus-gl>=$pkgver" 'bridge-utils' 'multipath-tools' "euca2ools>=3.0.2" 'open-iscsi' 'libvirt' 'parted' 'perl-xml-simple' 'perl-sys-virt')
+	backup=(etc/eucalyptus/libvirt.xsl)
+	install=eucalyptus-nc.install
+
+	install -d ${pkgdir}/usr/bin/
+	install -d ${pkgdir}/etc/eucalyptus/nc-hooks/
+	install -d ${pkgdir}/usr/lib/eucalyptus/
+	install -d ${pkgdir}/usr/lib/systemd/system/
+	install -d ${pkgdir}/usr/lib/axis2c/services/EucalyptusNC/
+	install -d ${pkgdir}/usr/share/eucalyptus/
+	install -d ${pkgdir}/usr/share/polkit-1/rules.d
+	install -d -m 0771 ${pkgdir}/var/lib/eucalyptus/instances/
+	install -m 644 ${srcdir}/eucalyptus-nc.service "${pkgdir}/usr/lib/systemd/system/eucalyptus-cloud.service"
+	install -m 755 ${srcdir}/fakeinstall/etc/init.d/eucalyptus-nc "${pkgdir}/usr/lib/eucalyptus/"
+	install ${srcdir}/fakeinstall/etc/eucalyptus/libvirt.xsl "${pkgdir}/etc/eucalyptus/"
+	install ${srcdir}/fakeinstall/etc/eucalyptus/nc-hooks/example.sh "${pkgdir}/etc/eucalyptus/nc-hooks/"
+	install ${srcdir}/fakeinstall/usr/sbin/euca_test_nc "${pkgdir}/usr/bin/"
+	install ${srcdir}/eucalyptus-nc-libvirt.rules "${pkgdir}/usr/share/polkit-1/rules.d/"
+	cp -r ${srcdir}/fakeinstall/usr/lib/axis2c/services/EucalyptusNC/ "${pkgdir}/usr/lib/axis2c/services/"
+
+	for file in detach.pl gen_kvm_libvirt_xml gen_libvirt_xml getstats.pl get_sys_info get_xen_info partition2disk; do
+		install ${srcdir}/fakeinstall/usr/share/eucalyptus/$file "${pkgdir}/usr/share/eucalyptus/"
+	done
+
+	sed -i 's#\t$EUCALYPTUS/usr/libexec/eucalyptus/conntrack_kernel_params#\t$EUCALYPTUS/usr/lib/eucalyptus/conntrack_kernel_params#' \
+	${pkgdir}/usr/lib/eucalyptus/eucalyptus-nc
+
+	#FIXME make me readable!
+	sed -i '140i\ \t# if we find modules load it (needed by httpd-2.4.x) \n\t if [ -e $HTTPD_HOME/usr/lib64/httpd/modules/mod_mpm_event.so ]; then \n\t echo "LoadModule mpm_event_module /usr/lib64/httpd/modules/mod_mpm_event.so" >> $EUCALYPTUS/etc/eucalyptus/httpd-tmp.conf \n\t fi \n\t if [ -e $HTTPD_HOME/usr/lib64/httpd/modules/mod_authn_core.so ]; then \n\t echo "LoadModule authn_core_module /usr/lib64/httpd/modules/mod_authn_core.so" >> $EUCALYPTUS/etc/eucalyptus/httpd-tmp.conf \n\t fi \n\t if [ -e $HTTPD_HOME/usr/lib64/httpd/modules/mod_authz_core.so ]; then \n\t echo "LoadModule authz_core_module /usr/lib64/httpd/modules/mod_authz_core.so" >> $EUCALYPTUS/etc/eucalyptus/httpd-tmp.conf \n\t fi \n\t if [ -e $HTTPD_HOME/usr/lib64/httpd/modules/mod_unixd.so ]; then \n\t echo "LoadModule unixd_module /usr/lib64/httpd/modules/mod_unixd.so" >> $EUCALYPTUS/etc/eucalyptus/httpd-tmp.conf \n\t fi' \
+${pkgdir}/usr/lib/eucalyptus/eucalyptus-nc
+ }
+
+package_eucalyptus-gl() {
+	pkgdesc="This package contains the internal log service of eucalyptus."
+	depends=("eucalyptus>=$pkgver" 'apache')
+	install -d ${pkgdir}/usr/lib/axis2c/services/EucalyptusGL/
+	cp -r ${srcdir}/fakeinstall/usr/lib/axis2c/services/EucalyptusGL/ "${pkgdir}/usr/lib/axis2c/services/"
+ }
+
+package_eucalyptus-admin-tools() {
+	pkgdesc="This package contains command line tools necessary for managing a Eucalyptus cluster."
+	depends=("eucalyptus>=$pkgver" "python-eucadmin>=$pkgver")
+
+	install -d ${pkgdir}/usr/bin
+	install ${srcdir}/fakeinstall/usr/sbin/euca-*-* "${pkgdir}/usr/bin/"
+	install ${srcdir}/fakeinstall/usr/sbin/euca_conf "${pkgdir}/usr/bin/"
+	install ${srcdir}/fakeinstall/usr/sbin/euca-validator "${pkgdir}/usr/bin/"
+ }
+
+package_python-eucadmin() {
+	pkgdesc="This package contains the Python library used by Eucalyptus administration tools. It is neither intended nor supported for use by any other programs."
+	license=('BSD' 'Python')
+	depends=('pygresql' "python2-boto>=2.1" "python2-m2crypto" 'rsync')
+	optdepends=('python2-yaml: Adds support for using validator scripts' 'python2-paramiko: Adds support for using validator scripts')
+	arch=(any)
+
+	install -d ${pkgdir}/usr/lib/eucadmin/
+	install -d ${pkgdir}/usr/lib/python2.7/site-packages/eucadmin
+	cp -r ${srcdir}/fakeinstall/usr/lib/eucadmin/* ${pkgdir}/usr/lib/eucadmin/
+	cp -r ${srcdir}/fakeinstall/usr/lib/python2.7/site-packages/eucadmin/* ${pkgdir}/usr/lib/python2.7/site-packages/eucadmin
+ }
+
+package_eucanetd() {
+	pkgdesc="Elastic Utility Computing Architecture - edge networking daemon"
+	license=('GPL3')
+	depends=("eucalyptus-nc>=$pkgver" 'dhcp' 'ebtables' 'ipset')
+	install=eucanetd.install
+
+	install -d ${pkgdir}/usr/bin
+	install -d ${pkgdir}/usr/lib/eucalyptus/
+	install -d ${pkgdir}/usr/lib/systemd/system/
+	install -m644 ${srcdir}/eucanetd.service "${pkgdir}/usr/lib/systemd/system/"
+	install -m644 ${srcdir}/fakeinstall/etc/init.d/eucanetd "${pkgdir}/usr/lib/eucalyptus/"
+	install ${srcdir}/fakeinstall/usr/sbin/eucanetd "${pkgdir}/usr/bin/"
+
+	sed -i 's#\t$EUCALYPTUS/usr/libexec/eucalyptus/conntrack_kernel_params#\t$EUCALYPTUS/usr/lib/eucalyptus/conntrack_kernel_params#' \
+	${pkgdir}/usr/lib/eucalyptus/eucanetd
+ }

@@ -1,0 +1,13 @@
+post_install() {
+	chown eucalyptus:eucalyptus /var/lib/eucalyptus/CC
+	chown eucalyptus:eucalyptus /usr/share/eucalyptus/dynserv.pl
+
+	if [ $1 -eq 2 -a ! -e /etc/eucalyptus/iptables-preload -a -f /var/run/eucalyptus/iptables-preload ]; then
+    # Migrate /var/run/eucalyptus/iptables-preload (EUCA-3693, for eucalyptus 3.2.1)
+    mv /var/run/eucalyptus/iptables-preload /etc/eucalyptus/iptables-preload
+	fi
+}
+
+pre_remove() {
+	systemctl stop eucalyptus-cc.service
+}

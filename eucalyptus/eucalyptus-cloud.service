@@ -1,0 +1,14 @@
+[Unit]
+Description=The Eucalyptus Cloud web services stack
+After=syslog.target network.target remote-fs.target nss-lookup.target
+Wants=tgtd.service
+
+[Service]
+Type=forking
+PIDFile=/var/run/eucalyptus/eucalyptus-cloud.pid
+ExecStart=/usr/lib/eucalyptus/eucalyptus-cloud start
+ExecStop=/usr/lib/eucalyptus/eucalyptus-cloud stop
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

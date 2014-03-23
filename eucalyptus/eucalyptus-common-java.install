@@ -1,0 +1,8 @@
+post_install() {
+	chown eucalyptus:eucalyptus  /var/lib/eucalyptus/webapps/
+	udevadm control --reload-rules
+}
+
+pre_remove() {
+	systemctl stop eucalyptus-cloud.service
+}

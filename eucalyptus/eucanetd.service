@@ -1,0 +1,13 @@
+[Unit]
+Description=The Eucalyptus Edge Networking service
+After=syslog.target network.target remote-fs.target nss-lookup.target libvirtd.service eucalyptus-nc.service
+
+[Service]
+Type=forking
+PIDFile=/var/run/eucalyptus/eucalyptus-eucanetd.pid
+ExecStart=/usr/lib/eucalyptus/eucanetd start
+ExecStop=/usr/lib/eucalyptus/eucanetd stop
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

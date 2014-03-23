@@ -1,0 +1,9 @@
+post_install() {
+	usermod -a -G kvm eucalyptus
+	systemctl restart libvirtd
+	chown eucalyptus:eucalyptus /var/lib/eucalyptus/instances
+}
+
+pre_remove() {
+	systemctl stop eucalyptus-nc.service
+}

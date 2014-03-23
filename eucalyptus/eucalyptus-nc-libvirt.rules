@@ -1,0 +1,10 @@
+/*Allow eucalyptus group libvirt management permissions*/
+
+polkit.addRule(function(action, subject) {
+if (action.id == "org.libvirt.unix.manage" && 
+			subject.local && 
+			subject.active && 
+			subject.isInGroup("kvm")) {
+      	return polkit.Result.YES;
+  		}
+});

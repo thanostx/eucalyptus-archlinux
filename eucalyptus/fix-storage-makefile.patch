@@ -1,0 +1,11 @@
+--- /storage/Makefile	2014-03-12 18:43:48.670000612 +0200
++++ /storage/Makefile	2014-03-13 01:48:11.663326298 +0200
+@@ -79,7 +79,7 @@
+ TEST_DISKUTIL_OBJS  =                                            map.o                ../util/log.o ../util/misc.o ../util/euca_string.o ../util/euca_file.o ../util/ipc.o
+ 
+ STORAGE_LIBS    = $(LDFLAGS) -lcurl -lssl -lcrypto -pthread -lpthread
+-TESTS           = test_vbr test_blobstore test_ebs test_diskutil
++TESTS           = test_blobstore test_ebs test_diskutil
+ #EFENCE          = -lefence
+ 
+ #all: vbr.o backing.o storage-windows.o walrus.o diskutil.o map.o Wclient euca-blobs generated/stubs $(SCCLIENT) $(TESTS)
