@@ -12,26 +12,12 @@ post_install() {
   if type -P systemd-tmpfiles &> /dev/null; then
     systemd-tmpfiles --create eucalyptus-console.conf
   fi
-
-	systemctl start eucalyptus-console.service
-	systemctl enable eucalyptus-console.service
-}
-
-pre_upgrade() {
-	systemctl stop eucalyptus-console.service
 }
 
 post_upgrade() {
   if type -P systemd-tmpfiles &> /dev/null; then
     systemd-tmpfiles --create eucalyptus-console.conf
   fi
-
-	systemctl start eucalyptus-console.service
-}
-
-pre_remove() {
-	systemctl stop eucalyptus-console.service
-	systemctl disable eucalyptus-console.service
 }
 
 post_remove() {
