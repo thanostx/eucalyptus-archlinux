@@ -255,10 +255,6 @@ package_eucalyptus-nc() {
 		install "${srcdir}/fakeinstall/usr/share/eucalyptus/$file" "${pkgdir}/usr/share/eucalyptus/"
 	done
 
-	for file in detach.pl gen_kvm_libvirt_xml gen_libvirt_xml getstats.pl get_sys_info get_xen_info partition2disk; do
-		install ${srcdir}/fakeinstall/usr/share/eucalyptus/$file "${pkgdir}/usr/share/eucalyptus/"
-	done
-
 	sed -i 's#\t$EUCALYPTUS/usr/libexec/eucalyptus/conntrack_kernel_params#\t$EUCALYPTUS/usr/lib/eucalyptus/conntrack_kernel_params#' \
 	"${pkgdir}/usr/lib/eucalyptus/eucalyptus-nc"
 
