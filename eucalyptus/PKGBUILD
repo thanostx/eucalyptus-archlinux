@@ -20,7 +20,8 @@ arch=('x86_64')
 url="http://www.eucalyptus.com"
 license=('GPL3')
 makedepends=( #makedepends 
-'apache-ant' 'apache-ivy' "axis2c>=1.6.0" "axis2<=1.4.0" "rampartc>=1.3.0" 'maven' "libvirt>=0.6" 'libxslt' 'python2-m2crypto' 'python2-setuptools' 'swig' 'xalan-java' 'git' 'curl' 'gwt'
+'apache-ant' 'apache-ivy' "axis2c>=1.6.0" "axis2<=1.4.0" "rampartc>=1.3.0" 'maven' "libvirt>=0.6" 'libxslt'
+'python2-m2crypto' 'python2-setuptools' 'swig' 'xalan-java' 'git' 'curl' 'gwt' 'libcups' 'fontconfig'
 #runtime depends
 'apache' 'bridge-utils' 'dhcp' 'drbd' 'ebtables' 'euca2ools' 'ipset' 'lvm2' 'multipath-tools' 'open-iscsi' 'perl-crypt-openssl-random' 'java-environment'
 'perl-crypt-openssl-rsa'  'perl-xml-simple' 'perl-sys-virt' 'bc' 'parted' 'postgresql' 'pygresql' 'python2-boto' 'rsync' 'tgt' 'vtun' 'vconfig' 'wget')
