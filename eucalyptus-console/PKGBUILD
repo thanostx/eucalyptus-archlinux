@@ -34,12 +34,10 @@ package() {
   cd "$srcdir/$_buildname-$pkgver"
 	python2 setup.py install --root="${pkgdir}" --skip-build
 
-	install -d $pkgdir/var/log/eucalyptus-console
-	install -d $pkgdir/usr/lib/systemd/system
-	install -d $pkgdir/usr/lib/{eucalyptus-console,tmpfiles.d}
-	install -m 755 $srcdir/eucalyptus-console.conf "$pkgdir/usr/lib/tmpfiles.d/"
-	install -m 755 $srcdir/eucalyptus-console.init $pkgdir/usr/lib/eucalyptus-console/
-	install $srcdir/eucalyptus-console.service $pkgdir/usr/lib/systemd/system
+	install -d "$pkgdir/var/log/eucalyptus-console"
+	install -Dm 755 "$srcdir/eucalyptus-console.conf" "$pkgdir/usr/lib/tmpfiles.d/eucalyptus-console.conf"
+	install -Dm 755 "$srcdir/eucalyptus-console.init" "$pkgdir/usr/lib/eucalyptus-console/eucalyptus-console.init"
+	install -D "$srcdir/eucalyptus-console.service" "$pkgdir/usr/lib/systemd/system/eucalyptus-console.service"
 
 cat >> $pkgdir/etc/eucalyptus-console/console.ini << EOF
 [paths]

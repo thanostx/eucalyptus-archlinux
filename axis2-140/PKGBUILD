@@ -11,15 +11,13 @@ arch=('any')
 license="APACHE"
 depends=('java-runtime')
 source=(http://archive.apache.org/dist/ws/axis2/1_4/axis2-1.4-bin.zip
-	http://archive.apache.org/dist/ws/axis2/1_4/axis2-1.4-bin.zip.asc
 	axis2.sh)
 md5sums=('5fa104137aec522675aeaa2e6414dc40'
-         'SKIP'
          '4f2d3e7f0f7c9a2db471986c7a44c4f9')
 
 package() {
-  install -d $pkgdir/usr/share/java/
-  install -d $pkgdir/etc/profile.d/
-  cp axis2.sh $pkgdir/etc/profile.d/
-  mv $srcdir/$pkgname-1.4/ $pkgdir/usr/share/java/axis2/
+  install -d "$pkgdir/usr/share/java/"
+  install -d "$pkgdir/etc/profile.d/"
+  cp axis2.sh "$pkgdir/etc/profile.d/"
+  mv "$srcdir/$pkgname-1.4/" "$pkgdir/usr/share/java/axis2/"
 }

@@ -14,11 +14,11 @@ source=(https://pypi.python.org/packages/source/r/requestbuilder/requestbuilder-
 md5sums=('c53fe7f63ca02f5ce678607aae27e157')
 
 build() {
-	cd $srcdir/requestbuilder-$pkgver
+	cd "$srcdir/requestbuilder-$pkgver"
 	python2 setup.py build
 }
 
 package() {
-	cd $srcdir/requestbuilder-$pkgver
-	python2 setup.py install --root="${pkgdir}" --optimize=1 || return 1
+	cd "$srcdir/requestbuilder-$pkgver"
+	python2 setup.py install --root="${pkgdir}" --optimize=1
 }

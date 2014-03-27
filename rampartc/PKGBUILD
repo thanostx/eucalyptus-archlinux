@@ -34,7 +34,7 @@ md5sums=('3420fd8cdd4c70e6f18c27c94ba86384'
 AXIS2C_HOME=/usr/lib/axis2c
 
 prepare(){
-  pushd $srcdir/$pkgname-src-$pkgver
+  pushd "$srcdir/$pkgname-src-$pkgver"
     patch -p1 < $srcdir/rampartc-1.3.0-destdir.patch
     patch -p1 < $srcdir/rampartc-1.3.0-quoting.patch
     patch -p1 < $srcdir/rampartc-1.3.0-cast.patch
@@ -47,7 +47,7 @@ prepare(){
 }
 
 build() {
-  pushd $srcdir/$pkgname-src-$pkgver
+  pushd "$srcdir/$pkgname-src-$pkgver"
     autoreconf -i
     ./configure --prefix=$AXIS2C_HOME --enable-static=no  --with-axis2=$AXIS2C_HOME/include/axis2-1.6.0 CFLAGS=-w
     make
@@ -55,7 +55,7 @@ build() {
 }
 
 package() {
-  pushd $srcdir/$pkgname-src-$pkgver
-    make DESTDIR=$pkgdir install
+  pushd "$srcdir/$pkgname-src-$pkgver"
+    make DESTDIR="$pkgdir" install
   popd
 }

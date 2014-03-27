@@ -18,18 +18,18 @@ md5sums=('073fbe1b7637d6a39d126b6679b40df3'
          'SKIP')
 
 build() {
-	cd $srcdir/$pkgname-$pkgver
+	cd "$srcdir/$pkgname-$pkgver"
 	python2 setup.py build
 }
 
 package() {
-	cd $srcdir/$pkgname-$pkgver
-	python2 setup.py install --root="${pkgdir}" --optimize=1 || return 1
+	cd "$srcdir/$pkgname-$pkgver"
+	python2 setup.py install --root="${pkgdir}" --optimize=1
 
-	mkdir -p ${pkgdir}/etc/euca2ools
-	cp -p conf/euca2ools.ini ${pkgdir}/etc/euca2ools
-	mkdir -p ${pkgdir}/usr/share/euca2ools/certs
-	cp -p certs/* ${pkgdir}/usr/share/euca2ools/certs
+	mkdir -p "${pkgdir}/etc/euca2ools"
+	cp -p conf/euca2ools.ini "${pkgdir}/etc/euca2ools"
+	mkdir -p "${pkgdir}/usr/share/euca2ools/certs"
+	cp -p certs/* "${pkgdir}/usr/share/euca2ools/certs"
 
 	# Change shebang lines for python2.
 	find . -type f | xargs sed -i "s:/python:/python2:"
