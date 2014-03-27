@@ -133,6 +133,10 @@ package_eucalyptus-common() {
 	# We use python2
 	sed -i "s|#!/usr/bin/python -tt|#!/usr/bin/python2 -tt|" "${pkgdir}/usr/share/eucalyptus/create-loop-devices"
 
+	# Load mod_axis2.so not libmod_axis2.so
+	sed -i 's#LoadModule axis2_module APACHE2_MODULE_DIR/libmod_axis2.so#LoadModule axis2_module APACHE2_MODULE_DIR/mod_axis2.so#' \
+	"${pkgdir}/etc/eucalyptus/httpd.conf"
+
 	# Give some love to eucalyptus.conf
 	sed -i -e 's#.*EUCALYPTUS=.*#EUCALYPTUS="/"#' \
        -e 's#.*HYPERVISOR=.*#HYPERVISOR="kvm"#' \
