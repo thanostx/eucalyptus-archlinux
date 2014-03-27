@@ -143,7 +143,7 @@ package_eucalyptus-common() {
 
 package_eucalyptus-common-java() {
 	pkgdesc="Common java files of Eucalyptus cloud."
-	depends=("eucalyptus-common>=$pkgver" 'java-environment' 'maven')
+	depends=("eucalyptus-common>=$pkgver" 'maven')
 	provides=("eucalyptus-enterprise-storage-san-common-libs=$pkgver")
 	install=eucalyptus-common-java.install
 
@@ -210,7 +210,7 @@ package_eucalyptus-cloud() {
 
 package_eucalyptus-cc() {
 	pkgdesc="The cluster controller part of Eucalyptus. It handles a group of node controllers."
-	depends=("eucalyptus-common>=$pkgver" "eucalyptus-gl>=$pkgver" 'bridge-utils' "dhcp>=4.1.1" 'vtun')
+	depends=("eucalyptus-common>=$pkgver" "eucalyptus-gl>=$pkgver" "axis2c>=1.6.0" 'bridge-utils' "dhcp>=4.1.1" 'vtun')
 	install=eucalyptus-cc.install
 
 	install -d "${pkgdir}/usr/lib/axis2c/services/EucalyptusCC/"
@@ -236,7 +236,7 @@ package_eucalyptus-cc() {
 
 package_eucalyptus-nc() {
 	pkgdesc="The node controller part of Eucalyptus. This component handles instances."
-	depends=("eucalyptus-common>=$pkgver" "eucalyptus-gl>=$pkgver" 'bridge-utils' 'multipath-tools' "euca2ools>=3.0.2" 'open-iscsi' 'libvirt' 'parted' 'perl-xml-simple' 'perl-sys-virt')
+	depends=("eucalyptus-common>=$pkgver" "eucalyptus-gl>=$pkgver" "axis2c>=1.6.0" 'bridge-utils' 'multipath-tools' "euca2ools>=3.0.2" 'open-iscsi' 'libvirt' 'perl-xml-simple' 'perl-sys-virt')
 	backup=(etc/eucalyptus/libvirt.xsl)
 	install=eucalyptus-nc.install
 
@@ -266,7 +266,7 @@ package_eucalyptus-nc() {
 
 package_eucalyptus-gl() {
 	pkgdesc="The internal log service of eucalyptus."
-	depends=('apache')
+	depends=("axis2c>=1.6.0" 'apache')
 	install -d "${pkgdir}/usr/lib/axis2c/services/EucalyptusGL/"
 	cp -r "${srcdir}/fakeinstall/usr/lib/axis2c/services/EucalyptusGL/" "${pkgdir}/usr/lib/axis2c/services/"
 }
@@ -289,7 +289,6 @@ package_eucalyptus-admin-tools() {
 
 package_eucanetd() {
 	pkgdesc="Elastic Utility Computing Architecture - edge networking mode"
-	license=('GPL3')
 	depends=("eucalyptus-nc>=$pkgver" 'dhcp' 'ebtables' 'ipset')
 	install=eucanetd.install
 
