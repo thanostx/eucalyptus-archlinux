@@ -156,7 +156,7 @@ package_eucalyptus-common-java() {
 	install -d "${pkgdir}/var/lib/eucalyptus/"
 
 	install -Dm 644 eucalyptus-cloud.service "${pkgdir}/usr/lib/systemd/system/eucalyptus-cloud.service"
-	install -Dm 644 "${srcdir}/fakeinstall/etc/init.d/eucalyptus-cloud" "${pkgdir}/usr/lib/eucalyptus/eucalyptus-cloud"
+	install -Dm 755 "${srcdir}/fakeinstall/etc/init.d/eucalyptus-cloud" "${pkgdir}/usr/lib/eucalyptus/eucalyptus-cloud"
 	install -Dm 755 "${srcdir}/fakeinstall/usr/sbin/eucalyptus-cloud" "${pkgdir}/usr/bin/eucalyptus-cloud"
 	install "${srcdir}/fakeinstall/etc/eucalyptus/cloud.d/eucalyptus-web-default.properties" "${pkgdir}/etc/eucalyptus/cloud.d/"
 	install "${srcdir}/fakeinstall/etc/eucalyptus/cloud.d/eucalyptus-web.properties" "${pkgdir}/etc/eucalyptus/cloud.d/"
